@@ -1,0 +1,48 @@
+# 保存为 E:\AI\drug_discovery_project\configs\dti_config.yaml
+data:
+  interactions_dir: E:/AI/drug_discovery_project/data/processed/interactions
+
+model:
+  drug_input_dim: 15
+  # DrugEncoder2Real2Imag 中每个分量（real1, real2, imag1, imag2）在GCN中间层的隐藏维度
+  drug_hidden_channels: 64
+  # DrugEncoder2Real2Imag 输出的 *每个分量* 的维度
+  # 药物总表征维度将是 4 * 64 = 256
+  drug_output_channels_component: 64
+  drug_num_layers: 3
+  drug_dropout: 0.2
+  # drug_conv_type: GCN # 对于自定义的内部多通道GCN，此参数可能不再直接使用
+
+  protein_input_dim: 480
+  # ProteinEncoder（为real1, real2, imag1, imag2分别实例化）输出的 *每个分量* 的维度
+  # 蛋白质总表征维度将是 4 * 64 = 256
+  protein_output_channels_component: 64
+  protein_dropout: 0.2
+
+  # 明确定义预测头MLP的参数
+  # combined_dim 将是 (64+64)*4 = 512
+  predictor_hidden_dim1: 256 # 对应 combined_dim // 2
+  predictor_hidden_dim2: 128 # 对应 combined_dim // 4
+  predictor_dropout: 0.2     # 预测头中Dropout层的失活率
+
+training:
+  batch_size: 256
+  epochs: 100
+  learning_rate: 0.001 # 优化后的学习率
+  weight_decay: 0.00001
+  early_stopping_patience: 15
+
+scheduler:
+  factor: 0.5
+  patience: 5 # 优化后的调度器耐心值
+  min_lr: 0.000001
+
+hardware:
+  device: cuda
+  num_workers: 0
+  pin_memory: false
+
+logging:
+  log_dir: E:/AI/drug_discovery_project/logs
+  # save_model_dir: E:/AI/drug_discovery_project/models # 请确保此路径与训练脚本中实际使用的模型保存路径一致
+  tensorboard_dir: E:/AI/drug_discovery_project/tensorboard
