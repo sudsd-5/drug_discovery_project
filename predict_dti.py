@@ -26,7 +26,7 @@ def load_model(model_path='models/best_model.pt', config=None):
     model = DTIPredictor(config['model'])
     
     # 加载训练好的参数
-    model.load_state_dict(torch.load(model_path))
+    model.load_state_dict(torch.load(model_path, weights_only=False))
     
     # 设置为评估模式
     model.eval()
@@ -56,7 +56,7 @@ def load_test_data(data_dir='data/processed/interactions'):
     """加载一些测试数据用于演示"""
     # 加载药物图数据
     drug_graphs_path = os.path.join(data_dir, 'drug_graphs.pt')
-    drug_graphs = torch.load(drug_graphs_path)
+    drug_graphs = torch.load(drug_graphs_path, weights_only=False)
     
     # 加载靶点序列
     target_sequences_path = os.path.join(data_dir, 'target_sequences.txt')
@@ -65,7 +65,7 @@ def load_test_data(data_dir='data/processed/interactions'):
     
     # 加载测试集索引
     test_idx_path = os.path.join(data_dir, 'test_idx.pt')
-    test_idx = torch.load(test_idx_path)
+    test_idx = torch.load(test_idx_path, weights_only=False)
     
     return [drug_graphs[i] for i in test_idx[:10]], [target_sequences[i] for i in test_idx[:10]]
 
