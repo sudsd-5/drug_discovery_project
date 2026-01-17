@@ -96,8 +96,8 @@ def batch_generate_protein_embeddings(sequences, batch_size=16):
     return torch.cat(embeddings, dim=0)
 
 def process_kiba_data():
-    data_dir = "E:\\AI\\drug_discovery_project\\data\\kiba"
-    output_dir = "E:\\AI\\drug_discovery_project\\data\\processed\\interactions"
+    data_dir = "data/kiba"
+    output_dir = "data/processed/interactions"
     os.makedirs(output_dir, exist_ok=True)
 
     with open(os.path.join(data_dir, 'ligands.can.txt'), 'r') as f:
