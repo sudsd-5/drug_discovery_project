@@ -1,4 +1,4 @@
-# 保存为 E:\AI\drug_discovery_project\src\preprocess_kiba.py
+# preprocess_kiba.py - KIBA Dataset Preprocessing
 import json
 import numpy as np
 import torch
@@ -96,8 +96,9 @@ def batch_generate_protein_embeddings(sequences, batch_size=16):
     return torch.cat(embeddings, dim=0)
 
 def process_kiba_data():
-    data_dir = "E:\\AI\\drug_discovery_project\\data\\kiba"
-    output_dir = "E:\\AI\\drug_discovery_project\\data\\processed\\interactions"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(script_dir, "data", "kiba")
+    output_dir = os.path.join(script_dir, "data", "processed", "interactions")
     os.makedirs(output_dir, exist_ok=True)
 
     with open(os.path.join(data_dir, 'ligands.can.txt'), 'r') as f:

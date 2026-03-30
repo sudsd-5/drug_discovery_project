@@ -1,4 +1,4 @@
-# 保存为 E:\AI\drug_discovery_project\src\preprocess.py
+# data_process.py - Data Processing Utilities
 import pandas as pd
 import torch
 from torch_geometric.data import Data
@@ -165,7 +165,8 @@ def load_data(file_path_drugbank, file_path_chembl):
     print(f"Skipped rows: {skip_counts}")
     print(f"Unknown labels encountered: {unknown_labels}")
 
-    output_dir = 'E:/AI/drug_discovery_project/data/processed/interactions'
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(script_dir, 'data', 'processed', 'interactions')
     os.makedirs(output_dir, exist_ok=True)
     torch.save(drug_graphs, os.path.join(output_dir, 'drug_graphs.pt'))
     torch.save(dynamics_data, os.path.join(output_dir, 'dynamics_data.pt'))
@@ -185,8 +186,9 @@ def load_data(file_path_drugbank, file_path_chembl):
 
 
 def main():
-    file_path_drugbank = 'E:/AI/drug_discovery_project/data/raw/drugbank/drug_target_interactions.csv'
-    file_path_chembl = 'E:/AI/drug_discovery_project/data/raw/chembl/molecular_properties.csv'
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path_drugbank = os.path.join(script_dir, 'data', 'raw', 'drugbank', 'drug_target_interactions.csv')
+    file_path_chembl = os.path.join(script_dir, 'data', 'raw', 'chembl', 'molecular_properties.csv')
     drug_graphs, dynamics_data, target_embeddings, interactions = load_data(file_path_drugbank, file_path_chembl)
 
 
