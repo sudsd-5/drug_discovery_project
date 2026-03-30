@@ -41,7 +41,7 @@ Recommended hardware:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/drug_discovery_project.git
+   git clone https://github.com/sudsd-5/drug_discovery_project.git
    cd drug_discovery_project
    ```
 
