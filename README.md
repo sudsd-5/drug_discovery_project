@@ -225,9 +225,9 @@ If you use this project in your research, please cite:
 @misc{DrugDiscoveryProject,
   author = {Drug Discovery Team},
   title = {Deep Learning-Based Drug Discovery Platform},
-  year = {2024},
+  year = {2026},
   publisher = {GitHub},
-  url = {https://github.com/yourusername/drug_discovery_project}
+  url = {https://github.com/sudsd-5/drug_discovery_project}
 }
 ```
 
