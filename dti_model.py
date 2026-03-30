@@ -1,4 +1,4 @@
-# E:\AI\drug_discovery_project\src\dti_model.py
+# dti_model.py - Drug-Target Interaction Prediction Model
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

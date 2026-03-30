@@ -1,4 +1,4 @@
-# 保存为 E:\AI\drug_discovery_project\src\preprocess_davis.py
+# preprocess_davis.py - Davis Dataset Preprocessing
 import json
 import numpy as np
 import torch
@@ -102,8 +102,9 @@ def batch_generate_protein_embeddings(sequences, batch_size=16):
 
 # 5. 主函数：处理 Davis 数据
 def process_davis_data():
-    data_dir = "E:\\AI\\drug_discovery_project\\data\\davis"
-    output_dir = "E:\\AI\\drug_discovery_project\\data\\processed\\interactions"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(script_dir, "data", "davis")
+    output_dir = os.path.join(script_dir, "data", "processed", "interactions")
     os.makedirs(output_dir, exist_ok=True)
 
     # 读取 SMILES

@@ -1,11 +1,13 @@
-# 保存为 E:\AI\drug_discovery_project\1.py
+# process_chembl_sqlite.py - ChEMBL Data Processing
 import sqlite3
 import pandas as pd
 import random
 import os
 
-# 连接数据库
-conn = sqlite3.connect(r"E:\AI\drug_discovery_project\data\raw\chembl\chembl_34_sqlite\chembl_34.db")
+# 使用相对路径连接数据库
+script_dir = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(script_dir, "data", "raw", "chembl", "chembl_34_sqlite", "chembl_34.db")
+conn = sqlite3.connect(db_path)
 
 # 查询正样本（IC50活性），提取 20,000 条，包含 target_sequence
 query = """
@@ -55,11 +57,11 @@ df_negative = pd.DataFrame(negative_data)
 df = pd.concat([df_positive, df_negative], ignore_index=True)
 
 # 确保目录存在
-output_dir = r"E:\AI\drug_discovery_project\data\raw\chembl"
+output_dir = os.path.join(script_dir, "data", "raw", "chembl")
 os.makedirs(output_dir, exist_ok=True)
 
-# 保存到绝对路径
-output_path = r"E:\AI\drug_discovery_project\data\raw\chembl\molecular_properties.csv"
+# 保存到相对路径
+output_path = os.path.join(output_dir, "molecular_properties.csv")
 df.to_csv(output_path, index=False)
 print(f"Generated {len(df)} samples, saved to {output_path}")
 conn.close()
