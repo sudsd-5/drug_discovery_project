@@ -8,7 +8,7 @@ from dti_model import DTIPredictor, amino_acid_to_idx
 
 def load_config(config_path=None):
     """加载配置文件"""
-    default_path = 'E:/AI/drug_discovery_project/configs/dti_config.yaml'
+    default_path = 'configs/dti_config.yaml'
     config_path = config_path or default_path  # 如果 config_path 是 None，则用默认路径
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"配置文件未找到: {config_path}")

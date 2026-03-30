@@ -1,11 +1,10 @@
-# 保存为 E:\AI\drug_discovery_project\1.py
 import sqlite3
 import pandas as pd
 import random
 import os
 
 # 连接数据库
-conn = sqlite3.connect(r"E:\AI\drug_discovery_project\data\raw\chembl\chembl_34_sqlite\chembl_34.db")
+conn = sqlite3.connect("data/raw/chembl/chembl_34_sqlite/chembl_34.db")
 
 # 查询正样本（IC50活性），提取 20,000 条，包含 target_sequence
 query = """

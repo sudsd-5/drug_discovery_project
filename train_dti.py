@@ -1,4 +1,3 @@
-# 保存为 E:\AI\drug_discovery_project\src\train_dti.py
 import os
 import torch
 import torch.nn as nn
@@ -43,7 +42,7 @@ class DTIDataset(Dataset):
         interaction = self.interactions[idx]
         return drug, protein_embedding, interaction
 
-def load_config(config_path='E:\\AI\\drug_discovery_project\\configs\\dti_config.yaml'):
+def load_config(config_path='configs/dti_config.yaml'):
     """加载配置文件"""
     with open(config_path, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f)
@@ -53,9 +52,9 @@ def load_config(config_path='E:\\AI\\drug_discovery_project\\configs\\dti_config
 def setup_logging(config):
     """设置日志记录"""
     log_dir = config['logging']['log_dir']
-    models_dir = 'E:\\AI\\drug_discovery_project\\output\\models'  # 修改为新的模型保存路径
+    models_dir = 'models'  # 修改为新的模型保存路径
     tensorboard_dir = config['logging']['tensorboard_dir']
-    output_log_dir = 'E:\\AI\\drug_discovery_project\\output'  # 输出日志目录
+    output_log_dir = 'output'  # 输出日志目录
 
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(models_dir, exist_ok=True)  # 确保新模型目录存在
@@ -331,7 +330,7 @@ def main():
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            torch.save(model.state_dict(), os.path.join('E:\\AI\\drug_discovery_project\\output\\models', 'best_model.pt'))
+            torch.save(model.state_dict(), os.path.join('models', 'best_model.pt'))
             early_stopping_counter = 0
         else:
             early_stopping_counter += 1
@@ -340,10 +339,10 @@ def main():
             logging.info(f'Early stopping at epoch {epoch + 1}')
             break
 
-    results_dir = 'E:\\AI\\drug_discovery_project\\output\\results'
-    plot_training_results(train_metrics, val_metrics, 'E:\\AI\\drug_discovery_project\\output\\models', results_dir)
+    results_dir = 'output/results'
+    plot_training_results(train_metrics, val_metrics, 'models', results_dir)
 
-    model.load_state_dict(torch.load(os.path.join('E:\\AI\\drug_discovery_project\\output\\models', 'best_model.pt')))
+    model.load_state_dict(torch.load(os.path.join('models', 'best_model.pt')))
     test_loss, test_acc, test_auroc, test_auprc, test_f1 = validate(model, test_loader, criterion, device) # <-- Get F1 for test set
 
     logging.info(f'Test results:')

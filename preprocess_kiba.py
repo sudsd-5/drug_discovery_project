@@ -1,4 +1,3 @@
-# 保存为 E:\AI\drug_discovery_project\src\preprocess_kiba.py
 import json
 import numpy as np
 import torch
