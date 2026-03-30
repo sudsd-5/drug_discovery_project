@@ -29,7 +29,7 @@
 
 1. 克隆项目：
    ```bash
-   git clone https://github.com/yourusername/drug_discovery_project.git
+   git clone https://github.com/sudsd-5/drug_discovery_project.git
    cd drug_discovery_project
    ```
 
@@ -140,7 +140,7 @@ tensorboard --logdir runs
 
 ## 贡献者
 
-- [您的名字] - 初始开发
+- sudsd-5 - 初始开发
 
 ## 许可证
 
@@ -152,10 +152,10 @@ tensorboard --logdir runs
 
 ```
 @misc{DrugDiscoveryProject,
-  author = {[您的名字]},
+  author = {sudsd-5},
   title = {Drug Discovery Platform},
-  year = {2024},
+  year = {2026},
   publisher = {GitHub},
-  url = {https://github.com/yourusername/drug_discovery_project}
+  url = {https://github.com/sudsd-5/drug_discovery_project}
 }
 ```
