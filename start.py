@@ -9,6 +9,8 @@
 import os
 import subprocess
 import time
+import sys
+import shutil
 
 def print_header(message):
     """打印带有格式的标题"""
@@ -22,26 +24,50 @@ def check_environment():
     print_header("检查环境")
     
     # 检查必要目录
-    for directory in ["data", "configs", "logs", "models", "runs"]:
+    for directory in ["data", "configs", "logs", "models", "runs", "data/raw", "data/raw/drugbank", "data/processed"]:
         if not os.path.exists(directory):
             os.makedirs(directory, exist_ok=True)
             print(f"创建目录: {directory}")
     
-    # 检查数据目录
-    for directory in ["data/raw", "data/raw/drugbank", "data/processed"]:
-        path = os.path.normpath(directory)
-        if not os.path.exists(path):
-            os.makedirs(path, exist_ok=True)
-            print(f"创建目录: {path}")
-    
     # 检查配置文件
     config_path = os.path.join("configs", "dti_config.yaml")
     if not os.path.exists(config_path):
-        print(f"错误: 缺少配置文件 {config_path}")
-        return False
+        if os.path.exists("dti_config.yaml"):
+            print(f"将 dti_config.yaml 复制到 {config_path}")
+            shutil.copy("dti_config.yaml", config_path)
+        else:
+            print(f"错误: 缺少配置文件 {config_path}")
+            return False
     
     print("环境检查完成！")
     return True
+
+def create_dummy_data():
+    """创建模拟数据用于调试"""
+    print_header("创建模拟数据")
+    
+    molecular_properties = os.path.join("data", "raw", "molecular_properties.csv")
+    drug_target_interactions = os.path.join("data", "raw", "drugbank", "drug_target_interactions.csv")
+    
+    if not os.path.exists(molecular_properties):
+        with open(molecular_properties, 'w') as f:
+            f.write("id,smiles,logP,MW\n")
+            f.write("1,CCO,0.5,46.07\n")
+            f.write("2,c1ccccc1,2.1,78.11\n")
+            f.write("3,CC(=O)Oc1ccccc1C(=O)O,1.19,180.16\n")
+            f.write("4,CN1C=NC2=C1C(=O)N(C(=O)N2C)C,-0.07,194.19\n")
+            f.write("5,C1=CC=C(C=C1)CC(C(=O)O)N,1.4,165.19\n")
+        print(f"已创建: {molecular_properties}")
+
+    if not os.path.exists(drug_target_interactions):
+        with open(drug_target_interactions, 'w') as f:
+            f.write("smiles,target_sequence,label\n")
+            f.write("CCO,MAAAAAAAAAA,inhibitor\n")
+            f.write("c1ccccc1,MBBBBBBBBBB,binder\n")
+            f.write("CC(=O)Oc1ccccc1C(=O)O,MCCCCCCCCCC,ligand\n")
+            f.write("CN1C=NC2=C1C(=O)N(C(=O)N2C)C,MDDDDDDDDDD,none\n")
+            f.write("C1=CC=C(C=C1)CC(C(=O)O)N,MEEEEEEEEEE,inhibitor\n")
+        print(f"已创建: {drug_target_interactions}")
 
 def check_data_files():
     """检查数据文件"""
@@ -51,15 +77,8 @@ def check_data_files():
     molecular_properties = os.path.join("data", "raw", "molecular_properties.csv")
     drug_target_interactions = os.path.join("data", "raw", "drugbank", "drug_target_interactions.csv")
     
-    if not os.path.exists(molecular_properties):
-        print(f"警告: 缺少分子性质数据文件 {molecular_properties}")
-        print("请确保将分子性质数据文件放置在正确位置")
-        return False
-    
-    if not os.path.exists(drug_target_interactions):
-        print(f"警告: 缺少药物-靶点相互作用数据文件 {drug_target_interactions}")
-        print("请确保将药物-靶点相互作用数据文件放置在正确位置")
-        return False
+    if not os.path.exists(molecular_properties) or not os.path.exists(drug_target_interactions):
+        create_dummy_data()
     
     print(f"分子性质数据文件: {molecular_properties} [已找到]")
     print(f"药物-靶点相互作用数据文件: {drug_target_interactions} [已找到]")
@@ -70,10 +89,13 @@ def run_command(command, description):
     """运行命令并打印输出"""
     print_header(description)
     
-    print(f"执行命令: {command}")
+    # 使用当前的 python 解释器
+    full_command = f"{sys.executable} {command}"
+    print(f"执行命令: {full_command}")
+    
     start_time = time.time()
     process = subprocess.Popen(
-        command, 
+        full_command, 
         shell=True, 
         stdout=subprocess.PIPE, 
         stderr=subprocess.STDOUT,
@@ -81,8 +103,9 @@ def run_command(command, description):
     )
     
     # 实时打印输出
-    for line in process.stdout:
-        print(line.strip())
+    if process.stdout:
+        for line in process.stdout:
+            print(line.strip())
     
     process.wait()
     end_time = time.time()
@@ -104,18 +127,15 @@ def main():
         return
     
     # 检查数据文件
-    if not check_data_files():
-        user_input = input("是否继续运行？(y/n): ")
-        if user_input.lower() != 'y':
-            return
+    check_data_files()
     
     # 数据处理
-    if not run_command("python src/process_drug_target_interactions.py", "数据处理"):
+    if not run_command("process_drug_target_interactions.py", "数据处理"):
         print("数据处理失败，停止流程")
         return
     
     # 模型训练
-    if not run_command("python src/train_dti.py", "模型训练"):
+    if not run_command("train_dti.py", "模型训练"):
         print("模型训练失败，停止流程")
         return
     
@@ -125,4 +145,4 @@ def main():
     print("可以使用 TensorBoard 查看训练过程: tensorboard --logdir runs")
 
 if __name__ == "__main__":
-    main() 
+    main()

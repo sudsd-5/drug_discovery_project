@@ -102,8 +102,8 @@ def batch_generate_protein_embeddings(sequences, batch_size=16):
 
 # 5. 主函数：处理 Davis 数据
 def process_davis_data():
-    data_dir = "E:\\AI\\drug_discovery_project\\data\\davis"
-    output_dir = "E:\\AI\\drug_discovery_project\\data\\processed\\interactions"
+    data_dir = "data/davis"
+    output_dir = "data/processed/interactions"
     os.makedirs(output_dir, exist_ok=True)
 
     # 读取 SMILES

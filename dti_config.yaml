@@ -28,11 +28,11 @@ model:
   predictor_dropout: 0.2
 
 training:
-  batch_size: 256
-  epochs: 100
+  batch_size: 32
+  epochs: 10
   learning_rate: 0.001
   weight_decay: 0.00001
-  early_stopping_patience: 15
+  early_stopping_patience: 5
   
   # Class imbalance handling
   pos_weight: 1.0
@@ -43,11 +43,11 @@ training:
 scheduler:
   type: ReduceLROnPlateau
   factor: 0.5
-  patience: 5
+  patience: 3
   min_lr: 0.000001
 
 hardware:
-  device: cuda  # cuda or cpu
+  device: cpu  # cuda or cpu
   num_workers: 0
   pin_memory: false
   
@@ -65,7 +65,7 @@ logging:
   wandb_entity: null
   
   # Logging frequency
-  log_interval: 10
+  log_interval: 1
   eval_interval: 1
 
 evaluation:

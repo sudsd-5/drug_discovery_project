@@ -28,9 +28,19 @@ def smiles_to_graph(smiles):
             feat = [
                 atom.GetAtomicNum(),
                 atom.GetDegree(),
-                atom.GetFormalCharge(),
-                atom.GetNumRadicalElectrons(),
+                atom.GetTotalNumHs(),
                 atom.GetIsAromatic(),
+                atom.GetFormalCharge(),
+                atom.GetNumImplicitHs(),
+                atom.IsInRing(),
+                atom.GetHybridization().real,
+                atom.GetTotalDegree(),
+                atom.GetTotalValence(),
+                atom.GetMass(),
+                atom.GetExplicitValence(),
+                atom.GetImplicitValence(),
+                1 if atom.GetChiralTag() != Chem.ChiralType.CHI_UNSPECIFIED else 0,
+                atom.GetNumRadicalElectrons(),
             ]
             atom_features.append(feat)
         x = torch.tensor(atom_features, dtype=torch.float)
@@ -311,4 +321,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

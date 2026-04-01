@@ -1,4 +1,4 @@
-# 保存为 E:\AI\drug_discovery_project\src\train_dti.py
+# 保存为 train_dti.py
 import os
 import torch
 import torch.nn as nn
@@ -27,12 +27,12 @@ class DTIDataset(Dataset):
     def __init__(self, drug_graphs, target_embeddings, interactions, indices=None, device=None):
         if indices is not None:
             self.drug_graphs = [drug_graphs[i] for i in indices]
-            self.target_embeddings = [target_embeddings[i].to(device) for i in indices]  # 预加载到 GPU
-            self.interactions = interactions[indices].to(device)  # 预加载到 GPU
+            self.target_embeddings = [target_embeddings[i].to(device) for i in indices]
+            self.interactions = interactions[indices].to(device)
         else:
             self.drug_graphs = drug_graphs
-            self.target_embeddings = [t.to(device) for t in target_embeddings]  # 预加载到 GPU
-            self.interactions = interactions.to(device)  # 预加载到 GPU
+            self.target_embeddings = [t.to(device) for t in target_embeddings]
+            self.interactions = interactions.to(device)
 
     def __len__(self):
         return len(self.drug_graphs)
@@ -43,65 +43,62 @@ class DTIDataset(Dataset):
         interaction = self.interactions[idx]
         return drug, protein_embedding, interaction
 
-def load_config(config_path='E:\\AI\\drug_discovery_project\\configs\\dti_config.yaml'):
+def load_config(config_path='configs/dti_config.yaml'):
     """加载配置文件"""
     with open(config_path, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f)
-        print("Loaded config:", config)  # 在赋值后再打印
+        print("Loaded config:", config)
         return config
 
 def setup_logging(config):
     """设置日志记录"""
     log_dir = config['logging']['log_dir']
-    models_dir = 'E:\\AI\\drug_discovery_project\\output\\models'  # 修改为新的模型保存路径
+    models_dir = config['logging']['save_model_dir']
     tensorboard_dir = config['logging']['tensorboard_dir']
-    output_log_dir = 'E:\\AI\\drug_discovery_project\\output'  # 输出日志目录
 
     os.makedirs(log_dir, exist_ok=True)
-    os.makedirs(models_dir, exist_ok=True)  # 确保新模型目录存在
+    os.makedirs(models_dir, exist_ok=True)
     os.makedirs(tensorboard_dir, exist_ok=True)
-    os.makedirs(output_log_dir, exist_ok=True)  # 确保输出目录存在
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    log_file = os.path.join(log_dir, f'dti_training_{timestamp}.log')  # 保留原有日志文件
-    output_log_file = os.path.join(output_log_dir, 'training.log')  # 固定输出日志文件
+    log_file = os.path.join(log_dir, f'train_{timestamp}.log')
+    output_log_file = os.path.join(log_dir, 'training.log')
 
-    # 配置日志记录，同时输出到控制台、原有日志文件和新的 training.log
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s [%(levelname)s] %(message)s',
         handlers=[
-            logging.FileHandler(log_file),           # 保留原有带时间戳的日志文件
-            logging.FileHandler(output_log_file),    # 输出到固定 training.log
-            logging.StreamHandler()                  # 输出到控制台
+            logging.FileHandler(log_file),
+            logging.FileHandler(output_log_file),
+            logging.StreamHandler()
         ]
     )
 
     return SummaryWriter(os.path.join(tensorboard_dir, timestamp))
 
 def load_data(config, device):
-    """加载数据并预加载到 GPU"""
+    """加载数据"""
     interactions_dir = config['data']['interactions_dir']
 
     drug_graphs_path = os.path.join(interactions_dir, 'drug_graphs.pt')
-    drug_graphs = torch.load(drug_graphs_path, map_location=device)  # 直接加载到 GPU
+    drug_graphs = torch.load(drug_graphs_path, map_location=device, weights_only=False)
     print(f"Number of graphs: {len(drug_graphs)}")
 
     target_embeddings_path = os.path.join(interactions_dir, 'target_embeddings.pt')
-    target_embeddings = torch.load(target_embeddings_path, map_location=device)  # 直接加载到 GPU
+    target_embeddings = torch.load(target_embeddings_path, map_location=device, weights_only=False)
     print(f"Number of target embeddings: {len(target_embeddings)}")
 
     interactions_path = os.path.join(interactions_dir, 'interactions.pt')
-    interactions = torch.load(interactions_path, map_location=device)  # 直接加载到 GPU
+    interactions = torch.load(interactions_path, map_location=device, weights_only=False)
     print(f"Number of interactions: {len(interactions)}")
 
     train_idx_path = os.path.join(interactions_dir, 'train_idx.pt')
     val_idx_path = os.path.join(interactions_dir, 'val_idx.pt')
     test_idx_path = os.path.join(interactions_dir, 'test_idx.pt')
 
-    train_idx = torch.load(train_idx_path, map_location=device)
-    val_idx = torch.load(val_idx_path, map_location=device)
-    test_idx = torch.load(test_idx_path, map_location=device)
+    train_idx = torch.load(train_idx_path, map_location=device, weights_only=False)
+    val_idx = torch.load(val_idx_path, map_location=device, weights_only=False)
+    test_idx = torch.load(test_idx_path, map_location=device, weights_only=False)
 
     return drug_graphs, target_embeddings, interactions, train_idx, val_idx, test_idx
 
@@ -134,8 +131,8 @@ def train_epoch(model, loader, criterion, optimizer, device):
     train_acc = accuracy_score(labels_np, predictions_binary_np)
     train_auroc = roc_auc_score(labels_np, predictions_proba_np)
     train_auprc = average_precision_score(labels_np, predictions_proba_np)
-    train_f1 = f1_score(labels_np, predictions_binary_np) # <-- Calculate F1 score
-    return train_loss, train_acc, train_auroc, train_auprc, train_f1 # <-- Return F1 score
+    train_f1 = f1_score(labels_np, predictions_binary_np)
+    return train_loss, train_acc, train_auroc, train_auprc, train_f1
 
 def validate(model, val_loader, criterion, device):
     model.eval()
@@ -156,28 +153,25 @@ def validate(model, val_loader, criterion, device):
 
             total_loss += loss.item()
             all_labels.append(labels.cpu())
-            all_preds_proba.append(torch.sigmoid(outputs).cpu()) # <-- Store probabilities
+            all_preds_proba.append(torch.sigmoid(outputs).cpu())
 
     val_loss = total_loss / len(val_loader)
     all_labels_tensor = torch.cat(all_labels)
     all_preds_proba_tensor = torch.cat(all_preds_proba)
 
-    all_labels_np = all_labels_tensor.squeeze().numpy().astype(int)
-    all_preds_proba_np = all_preds_proba_tensor.squeeze().numpy()
+    all_labels_np = all_labels_tensor.view(-1).numpy().astype(int)
+    all_preds_proba_np = all_preds_proba_tensor.view(-1).numpy()
     all_preds_binary_np = (all_preds_proba_np > 0.5).astype(int)
 
     val_acc = accuracy_score(all_labels_np, all_preds_binary_np)
     val_auroc = roc_auc_score(all_labels_np, all_preds_proba_np)
     val_auprc = average_precision_score(all_labels_np, all_preds_proba_np)
-    val_f1 = f1_score(all_labels_np, all_preds_binary_np) # <-- Calculate F1 score
-
-    return val_loss, val_acc, val_auroc, val_auprc, val_f1 # <-- Return F1 score
+    val_f1 = f1_score(all_labels_np, all_preds_binary_np)
+    return val_loss, val_acc, val_auroc, val_auprc, val_f1
 
 def plot_training_results(train_metrics, val_metrics, save_dir, results_dir):
-    """绘制训练结果图并保存到指定目录"""
-    os.makedirs(save_dir, exist_ok=True)
-    os.makedirs(results_dir, exist_ok=True)  # 确保结果目录存在
-
+    os.makedirs(results_dir, exist_ok=True)
+    
     plt.figure(figsize=(10, 6))
     plt.plot(train_metrics['loss'], label='Training Loss')
     plt.plot(val_metrics['loss'], label='Validation Loss')
@@ -189,8 +183,8 @@ def plot_training_results(train_metrics, val_metrics, save_dir, results_dir):
     plt.close()
 
     plt.figure(figsize=(10, 6))
-    plt.plot(train_metrics['accuracy'], label='Training Accuracy')
-    plt.plot(val_metrics['accuracy'], label='Validation Accuracy')
+    plt.plot(train_metrics['acc'], label='Training Accuracy')
+    plt.plot(val_metrics['acc'], label='Validation Accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.title('Training and Validation Accuracy')
@@ -218,7 +212,7 @@ def plot_training_results(train_metrics, val_metrics, save_dir, results_dir):
     plt.savefig(os.path.join(results_dir, 'auprc_curve.png'))
     plt.close()
 
-    plt.figure(figsize=(10, 6)) # <-- Add F1 plot
+    plt.figure(figsize=(10, 6))
     plt.plot(train_metrics['f1'], label='Training F1 Score')
     plt.plot(val_metrics['f1'], label='Validation F1 Score')
     plt.xlabel('Epoch')
@@ -229,125 +223,76 @@ def plot_training_results(train_metrics, val_metrics, save_dir, results_dir):
     plt.close()
 
 def main():
-    """主函数"""
     config = load_config()
-    writer = setup_logging(config)
-
+    
     device = torch.device(config['hardware']['device'] if torch.cuda.is_available() else 'cpu')
-    logging.info(f"Using device: {device}")
+    writer = setup_logging(config)
+    logging.info(f'Using device: {device}')
 
     drug_graphs, target_embeddings, interactions, train_idx, val_idx, test_idx = load_data(config, device)
 
-    train_dataset = DTIDataset(drug_graphs, target_embeddings, interactions, train_idx, device=device)
-    val_dataset = DTIDataset(drug_graphs, target_embeddings, interactions, val_idx, device=device)
-    test_dataset = DTIDataset(drug_graphs, target_embeddings, interactions, test_idx, device=device)
+    train_dataset = DTIDataset(drug_graphs, target_embeddings, interactions, train_idx, device)
+    val_dataset = DTIDataset(drug_graphs, target_embeddings, interactions, val_idx, device)
+    test_dataset = DTIDataset(drug_graphs, target_embeddings, interactions, test_idx, device)
 
-    batch_size = config['training']['batch_size']
-    train_loader = GeometricDataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=0,
-        pin_memory=False
-    )
-    val_loader = GeometricDataLoader(
-        val_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=0,
-        pin_memory=False
-    )
-    test_loader = GeometricDataLoader(
-        test_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=0,
-        pin_memory=False
-    )
+    train_loader = GeometricDataLoader(train_dataset, batch_size=config['training']['batch_size'], shuffle=True)
+    val_loader = GeometricDataLoader(val_dataset, batch_size=config['training']['batch_size'], shuffle=False)
+    test_loader = GeometricDataLoader(test_dataset, batch_size=config['training']['batch_size'], shuffle=False)
 
-    model = DTIPredictor(config['model']).to(device)
+    model = DTIPredictor(config).to(device)
+    
+    pos_weight = torch.tensor([config['training']['pos_weight']]).to(device)
+    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+    optimizer = optim.AdamW(model.parameters(), lr=config['training']['learning_rate'], weight_decay=config['training']['weight_decay'])
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=config['scheduler']['factor'], patience=config['scheduler']['patience'], min_lr=config['scheduler']['min_lr'])
 
-    logging.info("torch.compile is not supported on Windows, proceeding without model compilation.")
+    best_val_auroc = 0
+    early_stop_counter = 0
+    train_metrics = {'loss': [], 'acc': [], 'auroc': [], 'auprc': [], 'f1': []}
+    val_metrics = {'loss': [], 'acc': [], 'auroc': [], 'auprc': [], 'f1': []}
 
-    criterion = torch.nn.BCEWithLogitsLoss()
-    # 使用标准 AdamW，不传入不被所有 torch 版本支持的额外参数
-    optimizer = optim.AdamW(
-        model.parameters(),
-        lr=config['training']['learning_rate'],
-        weight_decay=config['training'].get('weight_decay', 0.0)
-    )
+    for epoch in range(config['training']['epochs']):
+        train_loss, train_acc, train_auroc, train_auprc, train_f1 = train_epoch(model, train_loader, criterion, optimizer, device)
+        val_loss, val_acc, val_auroc, val_auprc, val_f1 = validate(model, val_loader, criterion, device)
 
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode='min',
-        factor=config['scheduler']['factor'],
-        patience=config['scheduler']['patience'],
-        min_lr=config['scheduler']['min_lr']
-    )
+        scheduler.step(val_auroc)
 
-    epochs = config['training']['epochs']
-    best_val_loss = float('inf')
-    early_stopping_patience = config['training']['early_stopping_patience']
-    early_stopping_counter = 0
+        train_metrics['loss'].append(train_loss); train_metrics['acc'].append(train_acc)
+        train_metrics['auroc'].append(train_auroc); train_metrics['auprc'].append(train_auprc)
+        train_metrics['f1'].append(train_f1)
+        
+        val_metrics['loss'].append(val_loss); val_metrics['acc'].append(val_acc)
+        val_metrics['auroc'].append(val_auroc); val_metrics['auprc'].append(val_auprc)
+        val_metrics['f1'].append(val_f1)
 
-    train_metrics = {'loss': [], 'accuracy': [], 'auroc': [], 'auprc': [], 'f1': []} # <-- Add F1 to metrics dict
-    val_metrics = {'loss': [], 'accuracy': [], 'auroc': [], 'auprc': [], 'f1': []}   # <-- Add F1 to metrics dict
-
-    for epoch in range(epochs):
-        train_loss, train_acc, train_auroc, train_auprc, train_f1 = train_epoch(model, train_loader, criterion, optimizer, device) # <-- Get F1
-        val_loss, val_acc, val_auroc, val_auprc, val_f1 = validate(model, val_loader, criterion, device) # <-- Get F1
-
-        scheduler.step(val_loss)
-
-        train_metrics['loss'].append(train_loss)
-        train_metrics['accuracy'].append(train_acc)
-        train_metrics['auroc'].append(train_auroc)
-        train_metrics['auprc'].append(train_auprc)
-        train_metrics['f1'].append(train_f1) # <-- Store F1
-
-        val_metrics['loss'].append(val_loss)
-        val_metrics['accuracy'].append(val_acc)
-        val_metrics['auroc'].append(val_auroc)
-        val_metrics['auprc'].append(val_auprc)
-        val_metrics['f1'].append(val_f1) # <-- Store F1
+        logging.info(f'Epoch {epoch+1}/{config["training"]["epochs"]}:')
+        logging.info(f'Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}, Train AUROC: {train_auroc:.4f}, Train F1: {train_f1:.4f}')
+        logging.info(f'Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, Val AUROC: {val_auroc:.4f}, Val F1: {val_f1:.4f}')
 
         writer.add_scalar('Loss/train', train_loss, epoch)
         writer.add_scalar('Loss/val', val_loss, epoch)
-        writer.add_scalar('Accuracy/train', train_acc, epoch)
-        writer.add_scalar('Accuracy/val', val_acc, epoch)
-        writer.add_scalar('AUROC/train', train_auroc, epoch)
         writer.add_scalar('AUROC/val', val_auroc, epoch)
-        writer.add_scalar('AUPRC/train', train_auprc, epoch)
-        writer.add_scalar('AUPRC/val', val_auprc, epoch)
-        writer.add_scalar('F1/train', train_f1, epoch) # <-- Log F1 to TensorBoard
-        writer.add_scalar('F1/val', val_f1, epoch)   # <-- Log F1 to TensorBoard
 
-        logging.info(f'Epoch {epoch + 1}/{epochs}:')
-        logging.info(
-            f'Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}, Train AUROC: {train_auroc:.4f}, Train AUPRC: {train_auprc:.4f}, Train F1: {train_f1:.4f}') # <-- Log F1
-        logging.info(
-            f'Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, Val AUROC: {val_auroc:.4f}, Val AUPRC: {val_auprc:.4f}, Val F1: {val_f1:.4f}') # <-- Log F1
-        logging.info('------')
-
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            torch.save(model.state_dict(), os.path.join('E:\\AI\\drug_discovery_project\\output\\models', 'best_model.pt'))
-            early_stopping_counter = 0
+        if val_auroc > best_val_auroc:
+            best_val_auroc = val_auroc
+            torch.save(model.state_dict(), os.path.join(config['logging']['save_model_dir'], 'best_model.pt'))
+            early_stop_counter = 0
         else:
-            early_stopping_counter += 1
+            early_stop_counter += 1
 
-        if early_stopping_counter >= early_stopping_patience:
-            logging.info(f'Early stopping at epoch {epoch + 1}')
+        if early_stop_counter >= config['training']['early_stopping_patience']:
+            logging.info("Early stopping triggered")
             break
 
-    results_dir = 'E:\\AI\\drug_discovery_project\\output\\results'
-    plot_training_results(train_metrics, val_metrics, 'E:\\AI\\drug_discovery_project\\output\\models', results_dir)
+    results_dir = 'output/results'
+    plot_training_results(train_metrics, val_metrics, config['logging']['save_model_dir'], results_dir)
 
-    model.load_state_dict(torch.load(os.path.join('E:\\AI\\drug_discovery_project\\output\\models', 'best_model.pt')))
-    test_loss, test_acc, test_auroc, test_auprc, test_f1 = validate(model, test_loader, criterion, device) # <-- Get F1 for test set
-
-    logging.info(f'Test results:')
-    logging.info(f'Loss: {test_loss:.4f}, Accuracy: {test_acc:.4f}, AUROC: {test_auroc:.4f}, AUPRC: {test_auprc:.4f}, F1: {test_f1:.4f}') # <-- Log F1 for test set
+    best_model_path = os.path.join(config['logging']['save_model_dir'], 'best_model.pt')
+    if os.path.exists(best_model_path):
+        model.load_state_dict(torch.load(best_model_path, weights_only=False))
+        test_loss, test_acc, test_auroc, test_auprc, test_f1 = validate(model, test_loader, criterion, device)
+        logging.info(f'Test results:')
+        logging.info(f'Loss: {test_loss:.4f}, Accuracy: {test_acc:.4f}, AUROC: {test_auroc:.4f}, AUPRC: {test_auprc:.4f}, F1: {test_f1:.4f}')
 
     writer.close()
 
